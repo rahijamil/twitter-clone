@@ -1,6 +1,7 @@
 "use client";
 
 import { supabase } from '@/config/supabase.config';
+import { UserProfile } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import React, { useState } from 'react';
 
@@ -51,14 +52,30 @@ export default function Register() {
             setLoading(true);
             setError("")
 
-            const {data, error} = await supabase.auth.signUp({
+            const { data, error } = await supabase.auth.signUp({
                 email: loginData.email,
                 password: loginData.password
             });
 
-            if(error) {
+            if (error) {
                 setError(error.message);
                 return;
+            }
+
+            if (data.user) {
+                const newUser = {
+                    user_uid: data.user.id,
+                    email: data.user.email as string,
+                    avatar_url: '',
+                    cover_url: '',
+                    name: '',
+                    bio: '',
+                    location: '',
+                    website: '',
+                    username: data.user.email?.split('@')[0] as string,
+                }
+
+                const { } = await supabase.from("profiles").insert(newUser);
             }
 
         } catch (error: any) {

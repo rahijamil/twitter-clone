@@ -3,16 +3,17 @@
 import { supabase } from "@/config/supabase.config";
 import { createContext, useContext, useEffect, useState } from "react";
 
-type UserProfile = {
+export type UserProfile = {
     id?: number,
     user_uid: string;
     email: string,
     username: string
     avatar_url: string;
     cover_url: string;
-    first_name: string;
-    last_name: string;
+    name: string;
     bio: string;
+    location: string;
+    website: string;
     created_at: string;
 }
 
@@ -25,22 +26,28 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         const getUserProfile = async () => {
             const { data: { user }, error } = await supabase.auth.getUser();
 
-            const userData: UserProfile = {
-                user_uid: user?.id as string,
-                email: user?.email as string,
-                avatar_url: '',
-                cover_url: '',
-                first_name: '',
-                last_name: '',
-                bio: '',
-                username: user?.email?.split('@')[0] as string,
-                created_at: user?.created_at as string,
+            if(error) {
+                console.error(error);
+                return;
             }
 
-            setUserProfile(userData);
+            const { data, error: errorProfile } = await supabase.from("profiles").select("*").eq("user_uid", user?.id).single();
+
+            if(errorProfile) {
+                console.error(errorProfile);
+                return;
+            }
+
+            setUserProfile(data);
         }
 
         getUserProfile();
+
+        supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                getUserProfile();
+            }
+        })
     }, []);
 
     return (

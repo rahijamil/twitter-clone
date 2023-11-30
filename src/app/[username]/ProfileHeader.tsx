@@ -1,6 +1,11 @@
+"use client";
+
+import { useAuthContext } from '@/contexts/AuthContext'
 import React from 'react'
 
 export default function ProfileHeader() {
+    const userProfile = useAuthContext();
+
     return (
         <div className='flex items-center gap-8 px-2 py-[2px] sticky top-0 bg-white/60 backdrop-blur-md z-10'>
             <div className='w-9 h-9 cursor-pointer transition rounded-full flex items-center justify-center hover:bg-gray-200'>
@@ -10,7 +15,7 @@ export default function ProfileHeader() {
             </div>
 
             <div>
-                <h1 className='text-base font-bold'>Display Name</h1>
+                <h1 className='text-base font-bold'>{userProfile?.name || 'User Name'}</h1>
                 <p className='text-gray-500 text-sm'>465 posts</p>
             </div>
         </div>

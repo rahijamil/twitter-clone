@@ -57,6 +57,7 @@ export default function LoginPage() {
             });
 
             if(error) {
+                console.error(error)
                 setError(error.message);
                 return;
             }

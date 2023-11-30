@@ -1,14 +1,18 @@
+"use client";
+import { useAuthContext } from '@/contexts/AuthContext'
 import React from 'react'
 
 export default function ProfileInfo() {
+  const userProfile = useAuthContext();
+
   return (
     <div className='p-4 space-y-4'>
       <div>
-        <p className='text-xl font-bold'>Display Name</p>
-        <p className='text-gray-500 text-sm'>@username</p>
+        <p className='text-xl font-bold'>{userProfile?.name || 'User Name'}</p>
+        <p className='text-gray-500 text-sm'>@{userProfile?.username}</p>
       </div>
       <div>
-        <p className='text-sm'>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Amet dolores accusamus earum, non fugit autem. Praesentium perferendis adipisci molestiae debitis.</p>
+        <p className='text-sm'>{userProfile?.bio || 'User Bio'}</p>
       </div>
       <div>
         <ul className='flex flex-wrap gap-4 text-gray-500 text-sm'>

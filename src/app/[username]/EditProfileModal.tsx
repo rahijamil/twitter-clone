@@ -1,11 +1,88 @@
 import { Button } from '@/components'
-import React from 'react'
-import ProfileCover from './ProfileCover'
+import React, { useEffect, useState } from 'react'
+import { UserProfile, useAuthContext } from '@/contexts/AuthContext';
+import EditProfileCover from './EditProfileCover';
+import { supabase } from '@/config/supabase.config';
+
+export interface ProfileCoverImage {
+    avatar: File | null,
+    cover: File | null
+}
 
 export default function EditProfileModal({ onClose }: { onClose: () => void }) {
+    const userProfile = useAuthContext();
+    const [userData, setUserData] = useState<UserProfile | null>(userProfile);
+    const [images, setImages] = useState<ProfileCoverImage>({
+        avatar: null,
+        cover: null
+    });
+
+    const handleChange = (ev: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setUserData((prevUserData) => ({
+            ...prevUserData as UserProfile,
+            [ev.target.name]: ev.target.value,
+        }))
+    };
+
+    const handleSaveProfile = async () => {
+        if (userProfile?.user_uid && userData) {
+
+            const updatedUserData = {
+                name: userData?.name,
+                username: userData?.username,
+                bio: userData?.bio,
+                location: userData?.location,
+                website: userData?.website,
+                avatar_url: '',
+                cover_url: '',
+            }
+
+            if (images.avatar) {
+                const { data, error } = await supabase.storage.from('profile_images').update(`avatars/${userData?.user_uid}`, images.avatar, {
+                    upsert: true,
+                });
+
+                if (error) {
+                    console.error(error);
+                    return;
+                } else if (data) {
+                    const { data: { publicUrl } } = supabase.storage.from('profile_images').getPublicUrl(data.path);
+                    updatedUserData['avatar_url'] = publicUrl;
+                }
+            }
+
+            if (images.cover) {
+                const { data, error } = await supabase.storage.from('profile_images').update(`covers/${userData?.user_uid}`, images.cover, {
+                    upsert: true,
+                });
+
+                if (error) {
+                    console.error(error);
+                    return;
+                } else if (data) {
+                    const { data: { publicUrl } } = supabase.storage.from('profile_images').getPublicUrl(data.path);
+
+                    updatedUserData['cover_url'] = publicUrl;
+                }
+
+            }
+
+            const {error} = await supabase.from("profiles").update({
+                ...updatedUserData
+            }).eq("user_uid", userProfile.user_uid);
+
+            if (error) {
+                console.error(error);
+            }
+        }
+        else {
+            console.log("User UID not found");
+        }
+    }
+
     return (
         <div className='fixed top-0 bottom-0 left-0 right-0 bg-black/30 z-20 flex items-center justify-center' onClick={onClose}>
-            <div className='bg-white w-11/12 max-w-xl rounded-2xl' onClick={(ev) => ev.stopPropagation()}>
+            <div className='bg-white w-11/12 max-w-[38rem] rounded-2xl' onClick={(ev) => ev.stopPropagation()}>
                 {/* Modal Header */}
                 <div className='flex items-center justify-between gap-8 p-2'>
                     <div className='flex items-center gap-8'>
@@ -18,12 +95,65 @@ export default function EditProfileModal({ onClose }: { onClose: () => void }) {
                         <p className='font-bold text-xl'>Edit Profile</p>
                     </div>
                     <div className=''>
-                        <Button color='secondary'>Save</Button>
+                        <Button color='secondary' onClick={handleSaveProfile}>Save</Button>
                     </div>
                 </div>
 
-                {/* Modal Profile Cover */}
-                <ProfileCover />
+                <div className='max-h-[75vh] overflow-y-auto'>
+                    {/* Modal Profile Cover */}
+                    <EditProfileCover setImages={setImages} />
+
+                    {/* Modal Profile Info */}
+
+                    <div className='p-4 pb-12 space-y-6'>
+                        <div className='border-[1.5px] border-gray-200 rounded-md focus-within:border-primary overflow-hidden group transition'>
+                            <label htmlFor="name" className='text-gray-500 text-xs group-focus-within:text-primary transition block px-2 pt-2'>Name</label>
+                            <input
+                                type="text"
+                                id='name'
+                                name='name'
+                                className='w-full border-none focus:outline-none px-2 pb-1'
+                                value={userData?.name}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className='border-[1.5px] border-gray-200 rounded-md focus-within:border-primary overflow-hidden group transition'>
+                            <label htmlFor="bio" className='text-gray-500 text-xs group-focus-within:text-primary transition block px-2 pt-2'>Bio</label>
+                            <textarea
+                                id='bio'
+                                name='bio'
+                                className='w-full border-none focus:outline-none px-2 pb-1'
+                                value={userData?.bio}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className='border-[1.5px] border-gray-200 rounded-md focus-within:border-primary overflow-hidden group transition'>
+                            <label htmlFor="location" className='text-gray-500 text-xs group-focus-within:text-primary transition block px-2 pt-2'>Location</label>
+                            <input
+                                type="text"
+                                id='location'
+                                name='location'
+                                className='w-full border-none focus:outline-none px-2 pb-1'
+                                value={userData?.location}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className='border-[1.5px] border-gray-200 rounded-md focus-within:border-primary overflow-hidden group transition'>
+                            <label htmlFor="website" className='text-gray-500 text-xs group-focus-within:text-primary transition block px-2 pt-2'>Website</label>
+                            <input
+                                type="url"
+                                id='website'
+                                name='website'
+                                className='w-full border-none focus:outline-none px-2 pb-1'
+                                value={userData?.website}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     )
