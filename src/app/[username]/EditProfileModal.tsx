@@ -10,12 +10,17 @@ export interface ProfileCoverImage {
 }
 
 export default function EditProfileModal({ onClose }: { onClose: () => void }) {
-    const userProfile = useAuthContext();
+    const {
+        userProfile
+    } = useAuthContext();
+
     const [userData, setUserData] = useState<UserProfile | null>(userProfile);
     const [images, setImages] = useState<ProfileCoverImage>({
         avatar: null,
         cover: null
     });
+
+    const [loading, setLoading] = useState<boolean>(false);
 
     const handleChange = (ev: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setUserData((prevUserData) => ({
@@ -26,6 +31,7 @@ export default function EditProfileModal({ onClose }: { onClose: () => void }) {
 
     const handleSaveProfile = async () => {
         if (userProfile?.user_uid && userData) {
+            setLoading(true);
 
             const updatedUserData = {
                 name: userData?.name,
@@ -33,17 +39,20 @@ export default function EditProfileModal({ onClose }: { onClose: () => void }) {
                 bio: userData?.bio,
                 location: userData?.location,
                 website: userData?.website,
-                avatar_url: '',
-                cover_url: '',
+                avatar_url: userData.avatar_url,
+                cover_url: userData.cover_url,
             }
 
             if (images.avatar) {
-                const { data, error } = await supabase.storage.from('profile_images').update(`avatars/${userData?.user_uid}`, images.avatar, {
+                const { data, error } = await supabase.storage.from('profile_images').upload(`avatars/${userData?.user_uid.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10)}_${images.avatar.name}`, images.avatar, {
                     upsert: true,
                 });
 
                 if (error) {
-                    console.error(error);
+                    console.error(
+                        { avatarUploadError: error }
+                    );
+                    setLoading(false);
                     return;
                 } else if (data) {
                     const { data: { publicUrl } } = supabase.storage.from('profile_images').getPublicUrl(data.path);
@@ -52,28 +61,37 @@ export default function EditProfileModal({ onClose }: { onClose: () => void }) {
             }
 
             if (images.cover) {
-                const { data, error } = await supabase.storage.from('profile_images').update(`covers/${userData?.user_uid}`, images.cover, {
+                const { data, error } = await supabase.storage.from('profile_images').upload(`covers/${userData?.user_uid.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10)}_${images.cover.name}`, images.cover, {
                     upsert: true,
                 });
 
                 if (error) {
-                    console.error(error);
+                    console.error(
+                        {
+                            coverUploadError: error
+                        }
+                    );
+                    setLoading(false);
                     return;
                 } else if (data) {
                     const { data: { publicUrl } } = supabase.storage.from('profile_images').getPublicUrl(data.path);
 
                     updatedUserData['cover_url'] = publicUrl;
                 }
-
             }
 
-            const {error} = await supabase.from("profiles").update({
+            const { error } = await supabase.from("profiles").update({
                 ...updatedUserData
             }).eq("user_uid", userProfile.user_uid);
 
             if (error) {
-                console.error(error);
+                console.error({ profileUpdateError: error });
+                setLoading(false);
+                return;
             }
+
+            setLoading(false);
+            onClose();
         }
         else {
             console.log("User UID not found");
@@ -95,7 +113,11 @@ export default function EditProfileModal({ onClose }: { onClose: () => void }) {
                         <p className='font-bold text-xl'>Edit Profile</p>
                     </div>
                     <div className=''>
-                        <Button color='secondary' onClick={handleSaveProfile}>Save</Button>
+                        <Button disabled={loading} color='secondary' onClick={handleSaveProfile}>
+                            {
+                                loading ? "Saving..." : "Save"
+                            }
+                        </Button>
                     </div>
                 </div>
 

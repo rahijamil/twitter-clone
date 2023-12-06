@@ -1,44 +1,56 @@
 "use client";
 
 import { supabase } from "@/config/supabase.config";
+import { UserProfile } from "@/lib/types";
 import { createContext, useContext, useEffect, useState } from "react";
 
-export type UserProfile = {
-    id?: number,
-    user_uid: string;
-    email: string,
-    username: string
-    avatar_url: string;
-    cover_url: string;
-    name: string;
-    bio: string;
-    location: string;
-    website: string;
-    created_at: string;
+type AuthContextType = {
+    userProfile: UserProfile | null,
+    userLoading: boolean
 }
 
-const AuthContext = createContext<UserProfile | null>(null);
+const AuthContext = createContext<AuthContextType>({
+    userProfile: null,
+    userLoading: true
+});
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
+    const [userLoading, setUserLoading] = useState<boolean>(true);
+
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
     useEffect(() => {
+
+        const channels = supabase.channel('custom-update-channel')
+            .on(
+                'postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'profiles' },
+                (payload) => {
+                    setUserProfile(payload.new as UserProfile);
+                }
+            )
+            .subscribe()
+
+
         const getUserProfile = async () => {
             const { data: { user }, error } = await supabase.auth.getUser();
 
-            if(error) {
+            if (error) {
                 console.error(error);
+                setUserLoading(false);
                 return;
             }
 
             const { data, error: errorProfile } = await supabase.from("profiles").select("*").eq("user_uid", user?.id).single();
 
-            if(errorProfile) {
+            if (errorProfile) {
                 console.error(errorProfile);
+                setUserLoading(false);
                 return;
             }
 
             setUserProfile(data);
+            setUserLoading(false);
         }
 
         getUserProfile();
@@ -48,10 +60,16 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
                 getUserProfile();
             }
         })
+
     }, []);
 
     return (
-        <AuthContext.Provider value={userProfile}>{children}</AuthContext.Provider>
+        <AuthContext.Provider value={{
+            userProfile,
+            userLoading
+        }}>
+            {children}
+        </AuthContext.Provider>
     )
 }
 

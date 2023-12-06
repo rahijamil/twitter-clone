@@ -5,11 +5,12 @@ import { sidebarItems } from './sidebarItems'
 import { usePathname } from 'next/navigation'
 import { Avatar, Button } from '..';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { supabase } from '@/config/supabase.config';
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const userProfile = useAuthContext();
+  const {
+    userProfile
+} = useAuthContext();
 
   // const handleLogout = async ()  => {
   //   await supabase.auth.signOut();

@@ -4,7 +4,9 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import React from 'react'
 
 export default function ProfileHeader() {
-    const userProfile = useAuthContext();
+    const {
+        userProfile
+    } = useAuthContext();
 
     return (
         <div className='flex items-center gap-8 px-2 py-[2px] sticky top-0 bg-white/60 backdrop-blur-md z-10'>

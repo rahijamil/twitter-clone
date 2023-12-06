@@ -7,7 +7,9 @@ import { useAuthContext } from '@/contexts/AuthContext';
 
 export default function ProfileCover() {
   const [showEditProfile, setShowEditProfile] = React.useState(false);
-  const userProfile = useAuthContext();
+  const {
+    userProfile
+} = useAuthContext();
 
   return (
     <>
