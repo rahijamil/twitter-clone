@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from '@/components';
-import React, { useEffect } from 'react';
+import React from 'react';
 import useAuthForm from './useAuthForm';
 
 export default function AuthForm() {
@@ -69,7 +69,7 @@ export default function AuthForm() {
                                 onClick={handleSubmit}
                             >
                                 {
-                                    loading ? "Loading..." : authStatus == "login" ? "Log in" : "Sign Up"
+                                    loading ? "Loading..." : authStatus == "login" ? "Log in" : "Sign up"
                                 }
                             </Button>
                         </div>

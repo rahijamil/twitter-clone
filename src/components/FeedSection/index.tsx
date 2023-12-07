@@ -1,12 +1,23 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import FeedHeader from './FeedHeader'
 import TweetBox from './TweetBox'
-import Tweet from './Tweet'
 import Tweets from './Tweets'
+import { Tweet } from '@/lib/types'
+import { supabase } from '@/config/supabase.config'
 
-export default function FeedSection() {
+async function getTweets(): Promise<Tweet[]> {
+  const { data, error } = await supabase.from('tweets').select('*').order('created_at', { ascending: false });
 
-  const tweets = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  return data;
+}
+
+export default async function FeedSection() {
+  const tweets = await getTweets();
 
   return (
     <>
@@ -17,7 +28,13 @@ export default function FeedSection() {
       <TweetBox />
 
       {/* Tweets Feed */}
-      <Tweets tweets={tweets} />
+      <Suspense fallback={
+        <div className='h-[70vh] flex justify-center py-10'>
+          <div className='w-7 h-7 border-[3px] border-t-primary border-gray-100 border-solid rounded-full animate-spin'></div>
+        </div>
+      }>
+        <Tweets tweets={tweets} />
+      </Suspense>
     </>
   )
 }

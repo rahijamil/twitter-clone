@@ -17,7 +17,7 @@ const validateEmail = (email: string) => {
 }
 
 export default function useAuthForm() {
-    const [authStatus, setAuthStatus] = useState<"login" | "signup">("login");
+    const [authStatus, setAuthStatus] = useState<"login" | "signup">("signup");
 
     const [loginData, setLoginData] = useState<LoginData>({
         email: '',
@@ -92,6 +92,15 @@ export default function useAuthForm() {
                     }
 
                     const { } = await supabase.from("profiles").insert(newUser);
+
+                    alert("Check your email for the verification link");
+                    setAuthStatus("login");
+
+                    setLoginData({
+                        ...loginData,
+                        password: '',
+                    })
+                    setLoading(false);
                 }
             }
 

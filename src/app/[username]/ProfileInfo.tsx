@@ -1,12 +1,8 @@
-"use client";
-import { useAuthContext } from '@/contexts/AuthContext'
+import { UserProfile } from '@/lib/types';
 import Link from 'next/link';
 import React from 'react'
 
-export default function ProfileInfo() {
-  const {
-    userProfile
-  } = useAuthContext();
+export default function ProfileInfo({userProfile}: {userProfile: UserProfile| null}) {
 
   return (
     <div className='p-4 space-y-4'>

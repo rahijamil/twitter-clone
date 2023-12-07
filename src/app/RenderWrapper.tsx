@@ -21,7 +21,6 @@ export default function RenderWrapper({ children }: { children: ReactNode }) {
                         </div>
                     </div>
                 ) : (
-
                     userProfile
                         ? <div className='wrapper flex'>
                             <Sidebar />
@@ -31,7 +30,6 @@ export default function RenderWrapper({ children }: { children: ReactNode }) {
                             <WidgetSection />
                         </div>
                         : <AuthForm />
-
                 )
             }
         </>

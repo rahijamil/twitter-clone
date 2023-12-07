@@ -54,12 +54,12 @@ export default function Sidebar() {
 
 
       <div className='flex items-center gap-2 hover:bg-gray-100 transition rounded-full p-3 mb-4 mr-8 cursor-pointer'>
-        <Avatar />
+        <Avatar avatarUrl={userProfile?.avatar_url} />
 
         <div className='flex items-center justify-between gap-4 flex-1'>
           <div className='text-sm'>
-            <p className='font-bold'>Display Name</p>
-            <p className='text-gray-500'>@username</p>
+            <p className='font-bold'>{userProfile?.name || "User Name"}</p>
+            <p className='text-gray-500'>@{userProfile?.username}</p>
           </div>
           <div>
             <div className='w-5 h-5'>

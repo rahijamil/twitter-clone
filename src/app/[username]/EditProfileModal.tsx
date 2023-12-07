@@ -1,8 +1,9 @@
 import { Button } from '@/components'
 import React, { useEffect, useState } from 'react'
-import { UserProfile, useAuthContext } from '@/contexts/AuthContext';
+import { useAuthContext } from '@/contexts/AuthContext';
 import EditProfileCover from './EditProfileCover';
 import { supabase } from '@/config/supabase.config';
+import { UserProfile } from '@/lib/types';
 
 export interface ProfileCoverImage {
     avatar: File | null,

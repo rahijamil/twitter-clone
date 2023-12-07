@@ -3,14 +3,11 @@ import { Avatar, Button } from '@/components'
 import Image from 'next/image'
 import React from 'react'
 import EditProfileModal from './EditProfileModal';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { UserProfile } from '@/lib/types';
 
-export default function ProfileCover() {
+export default function ProfileCover({userProfile}: {userProfile: UserProfile | null}) {
   const [showEditProfile, setShowEditProfile] = React.useState(false);
-  const {
-    userProfile
-} = useAuthContext();
-
+ 
   return (
     <>
       <div className='pb-20'>
